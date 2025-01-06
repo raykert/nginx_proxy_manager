@@ -1,18 +1,16 @@
-
-version: "3"
 services:
   app:
     image: 'jc21/nginx-proxy-manager:latest'
     restart: unless-stopped
-    container_name: npm
     ports:
       # These ports are in format <host-port>:<container-port>
       - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
-      - '83:81' # Admin Web Port
+      - '81:81' # Admin Web Port
       # Add any other Stream port you want to expose
       # - '21:21' # FTP
     environment:
+      # Mysql/Maria connection parameters:
       DB_MYSQL_HOST: "db"
       DB_MYSQL_PORT: 3306
       DB_MYSQL_USER: "npm"
@@ -25,9 +23,7 @@ services:
       - ./letsencrypt:/etc/letsencrypt
     depends_on:
       - db
-    networks:
-      - default
-      - npm
+
   db:
     image: 'jc21/mariadb-aria:latest'
     restart: unless-stopped
@@ -36,18 +32,6 @@ services:
       MYSQL_DATABASE: 'npm'
       MYSQL_USER: 'npm'
       MYSQL_PASSWORD: 'npm'
+      MARIADB_AUTO_UPGRADE: '1'
     volumes:
-      - ./data/mysql:/var/lib/mysql
-    networks:
-      - npm
-  web:
-    image: nginx
-    restart: always
-    networks:
-    - default
-    - npm
-
-networks:
-  npm:
-    driver: bridge
-
+      - ./mysql:/var/lib/mysql
